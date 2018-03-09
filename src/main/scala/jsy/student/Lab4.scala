@@ -130,8 +130,11 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       }
       case Binary(Eq|Ne, e1, e2) =>
         ???
-      case Binary(Lt|Le|Gt|Ge, e1, e2) =>
-        ???
+      case Binary(Lt|Le|Gt|Ge, e1, e2) => (typeof(env, e1), typeof(env, e2)) match {
+        case (TNumber, TNumber) => TBool
+        case (TString, TString) => TBool
+        case _ => ???
+      }
       case Binary(And|Or, e1, e2) =>
         ???
       case Binary(Seq, e1, e2) =>
