@@ -5,11 +5,11 @@ import jsy.lab4.Lab4Like
 object Lab4 extends jsy.util.JsyApplication with Lab4Like {
   import jsy.lab4.ast._
   import jsy.lab4.Parser
-  
+
   /*
    * CSCI 3155: Lab 4
    * <Your Name>
-   * 
+   *
    * Partner: <Your Partner's Name>
    * Collaborators: <Any Collaborators>
    */
@@ -17,7 +17,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
   /*
    * Fill in the appropriate portions above by replacing things delimited
    * by '<'... '>'.
-   * 
+   *
    * Replace the '???' expression with your code in each function.
    *
    * Do not make other modifications to this template, such as
@@ -32,34 +32,39 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
    * '???' as needed to get something that compiles without error. The '???'
    * is a Scala expression that throws the exception scala.NotImplementedError.
    */
-  
+
   /* Collections and Higher-Order Functions */
-  
+
   /* Lists */
-  
+
   def compressRec[A](l: List[A]): List[A] = l match {
-    case Nil | _ :: Nil => Nil
-    case h1 :: (t1 @ (h2 :: _)) => if (h2 != h1) h1 :: compressRec(t1) else compressRec(t1)
+    case Nil | _ :: Nil => l
+    case h1 :: (t1 @ (h2 :: _)) => if(h1==h2)  compressRec(t1) else h1::compressRec(t1)
   }
-  
+
   def compressFold[A](l: List[A]): List[A] = l.foldRight(Nil: List[A]){
-    (h, acc) => ???
+    (h, acc) =>  if (acc == Nil || h != acc(0)) h :: acc
+    else acc
   }
-  
+
   def mapFirst[A](l: List[A])(f: A => Option[A]): List[A] = l match {
-    case Nil => Nil
-    case h :: t => f(h) match {
+    case Nil => l
+    case h :: t => f(h) match{
       case None => h :: mapFirst(t)(f)
-      case Some(thing) => thing :: mapFirst(t) { (i) => None }
+      case Some(x) => x :: t
     }
   }
-  
+
   /* Trees */
 
   def foldLeft[A](t: Tree)(z: A)(f: (A, Int) => A): A = {
     def loop(acc: A, t: Tree): A = t match {
-      case Empty => ???
-      case Node(l, d, r) => ???
+      case Empty => z
+      case Node(l, d, r) => (l,d,r) match{
+        case (Empty, d, Empty) => f(acc,d)
+        case (Empty, d, r) => f(loop(acc,r),d)
+        case (l,d,r) => f(loop(acc,l),d)
+      } //  f(z,d)  Want in-order f(f(....))
     }
     loop(z, t)
   }
@@ -74,7 +79,13 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
 
   def strictlyOrdered(t: Tree): Boolean = {
     val (b, _) = foldLeft(t)((true, None: Option[Int])){
-      ???
+      (acc,d) => acc match{
+        case (false, _) => (false,None)
+        case (true, m) => m match {
+          case None => (true,Some(d))
+          case Some(x) => if(x > d) (true,Some(d)) else (false,None)
+        }
+      }
     }
     b
   }
@@ -88,7 +99,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
     case TObj(fields) if (fields exists { case (_, t) => hasFunctionTyp(t) }) => true
     case _ => false
   }
-  
+
   def typeof(env: TEnv, e: Expr): Typ = {
     def err[T](tgot: Typ, e1: Expr): T = throw StaticTypeError(tgot, e1, e)
 
@@ -108,7 +119,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
         ???
       case Binary(Plus, e1, e2) =>
         ???
-      case Binary(Minus|Times|Div, e1, e2) => 
+      case Binary(Minus|Times|Div, e1, e2) =>
         ???
       case Binary(Eq|Ne, e1, e2) =>
         ???
@@ -146,8 +157,8 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case GetField(e1, f) => ???
     }
   }
-  
-  
+
+
   /* Small-Step Interpreter */
 
   /*
@@ -179,17 +190,17 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
     def subst(e: Expr): Expr = e match {
       case N(_) | B(_) | Undefined | S(_) => e
       case Print(e1) => Print(substitute(e1, esub, x))
-        /***** Cases from Lab 3 */
+      /***** Cases from Lab 3 */
       case Unary(uop, e1) => ???
       case Binary(bop, e1, e2) => ???
       case If(e1, e2, e3) => ???
       case Var(y) => ???
       case Decl(mode, y, e1, e2) => ???
-        /***** Cases needing adapting from Lab 3 */
+      /***** Cases needing adapting from Lab 3 */
       case Function(p, params, tann, e1) =>
         ???
       case Call(e1, args) => ???
-        /***** New cases for Lab 4 */
+      /***** New cases for Lab 4 */
       case Obj(fields) => ???
       case GetField(e1, f) => ???
     }
@@ -247,9 +258,9 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
     e match {
       /* Base Cases: Do Rules */
       case Print(v1) if isValue(v1) => println(pretty(v1)); Undefined
-        /***** Cases needing adapting from Lab 3. */
+      /***** Cases needing adapting from Lab 3. */
       case Unary(Neg, v1) if isValue(v1) => ???
-        /***** More cases here */
+      /***** More cases here */
       case Call(v1, args) if isValue(v1) =>
         v1 match {
           case Function(p, params, _, e1) => {
@@ -272,17 +283,17 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
           }
           case _ => throw StuckError(e)
         }
-        /***** New cases for Lab 4. */
+      /***** New cases for Lab 4. */
 
       /* Inductive Cases: Search Rules */
       case Print(e1) => Print(step(e1))
-        /***** Cases from Lab 3. */
+      /***** Cases from Lab 3. */
       case Unary(uop, e1) => ???
-        /***** More cases here */
-        /***** Cases needing adapting from Lab 3 */
+      /***** More cases here */
+      /***** Cases needing adapting from Lab 3 */
       case Call(v1 @ Function(_, _, _, _), args) => ???
       case Call(e1, args) => ???
-        /***** New cases for Lab 4. */
+      /***** New cases for Lab 4. */
 
       /* Everything else is a stuck error. Should not happen if e is well-typed.
        *
@@ -293,11 +304,10 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case _ => throw StuckError(e)
     }
   }
-  
-  
+
+
   /* External Interfaces */
-  
+
   //this.debug = true // uncomment this if you want to print debugging information
   this.keepGoing = true // comment this out if you want to stop at first exception when processing a file
 }
-
