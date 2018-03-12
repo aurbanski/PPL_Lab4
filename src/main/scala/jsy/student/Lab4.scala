@@ -122,24 +122,24 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case Binary(Plus, e1, e2) => (typeof(env, e1), typeof(env, e2)) match {
         case (TNumber, TNumber) => TNumber
         case (TString, TString) => TString
-        case _ => ???
+        case (tgot, _) => err(tgot, e1)
       }
       case Binary(Minus|Times|Div, e1, e2) => (typeof(env, e1), typeof(env, e2)) match {
         case (TNumber, TNumber) => TNumber
-        case _ => ???
+        case (tgot, _) => err(tgot, e1)
       }
       case Binary(Eq|Ne, e1, e2) => (typeof(env, e1), typeof(env, e2)) match {
         case (m, n) if !(hasFunctionTyp(m) || hasFunctionTyp(n)) => TBool
-        case _ => ???
+        case (tgot, _) => err(tgot, e1)
       }
       case Binary(Lt|Le|Gt|Ge, e1, e2) => (typeof(env, e1), typeof(env, e2)) match {
         case (TNumber, TNumber) => TBool
         case (TString, TString) => TBool
-        case _ => ???
+        case (tgot, _) => err(tgot, e1)
       }
       case Binary(And|Or, e1, e2) => (typeof(env, e1), typeof(env, e2)) match {
         case (TBool, TBool) => TBool
-        case _ => ???
+        case (tgot, _) => err(tgot, e1)
       }
       case Binary(Seq, e1, e2) =>
         ???
