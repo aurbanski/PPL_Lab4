@@ -206,8 +206,8 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case N(_) | B(_) | Undefined | S(_) => e
       case Print(e1) => Print(substitute(e1, esub, x))
       /***** Cases from Lab 3 */
-      case Unary(uop, e1) => ???
-      case Binary(bop, e1, e2) => ???
+      case Unary(uop, e1) => Unary(uop, substitute(e1, esub, x))
+      case Binary(bop, e1, e2) => Binary(bop, substitute(e1, esub, x), substitute(e2, esub, x))
       case If(e1, e2, e3) => ???
       case Var(y) => ???
       case Decl(mode, y, e1, e2) => ???
