@@ -209,7 +209,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case Unary(uop, e1) => Unary(uop, substitute(e1, esub, x))
       case Binary(bop, e1, e2) => Binary(bop, substitute(e1, esub, x), substitute(e2, esub, x))
       case If(e1, e2, e3) => ???
-      case Var(y) => ???
+      case Var(y) => if (x != y) Var(y) else esub
       case Decl(mode, y, e1, e2) => ???
       /***** Cases needing adapting from Lab 3 */
       case Function(p, params, tann, e1) =>
@@ -220,7 +220,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case GetField(e1, f) => ???
     }
 
-    val fvs = freeVars(???)
+    val fvs = freeVars(esub)
     def fresh(x: String): String = if (???) fresh(x + "$") else x
     subst(???)
   }
