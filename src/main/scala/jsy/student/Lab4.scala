@@ -109,7 +109,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       case B(_) => TBool
       case Undefined => TUndefined
       case S(_) => TString
-      case Var(x) => env(x)
+      case Var(x) => env(x)//if(env.contains(x)) env(x) else err(TUndefined,Var(x))
       case Decl(_, x, e1, e2) =>
         val t1=typeof(env, e1)
         //update env with t1 for x
@@ -136,7 +136,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       }
       case Binary(Eq|Ne, e1, e2) => (typeof(env,e1),typeof(env,e2)) match {
         case (l,t) if ((l==t) && !hasFunctionTyp(l)) => TBool
-        case (tgot, _) if (hasFunctionTyp(tgot)) => err(tgot,e1)
+        case (tgot @ TFunction(_,_), _)  => err(tgot,e1)
         case (_,tgot) => err(tgot,e2)
       }
 
@@ -158,8 +158,8 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
 
       case If(e1, e2, e3) => if (typeof(env,e1)!=TBool) err(typeof(env,e1),e1)
       else (typeof(env,e2),typeof(env,e3)) match {
-        case (l,t) if ((l==t) && (l!=TFunction)) => l
-        case (tgot, _) if (tgot==TFunction) => err(tgot,e2)
+        case (l,t) if (l==t) => l
+        //case (tgot, _) if (tgot==TFunction) => err(tgot,e2)
         case (_,tgot) => err(tgot,e3)
       }
       //Changed before passing less test cases: Source -> K
@@ -169,7 +169,7 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
         val env1 = (p, tann) match {
           /***** Add cases here *****/
           case (None, t) => env
-          case (Some(pp), Some(t)) => env + (pp->t)
+          case (Some(pp), Some(t)) => env + (pp->TFunction(params, t))
           case _ => err(TUndefined, e1)
         }
         // Bind to env2 an environment that extends env1 with bindings for params.
@@ -196,14 +196,6 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
       }
       case Obj(fields) => TObj(fields.mapValues(value => typeof(env,value)))
       case GetField(e1, f) =>
-        /*val t=typeof(env,e1)
-        e1 match {
-          case Obj(fields) => fields.get(f) match{
-            case Some(m) => typeof(env,m)
-            case None => err(t,e1)
-          }
-          case _ => err(t,e1)
-        }*/
         val t=typeof(env,e1)
         t match{
           case TObj(fields) => fields.get(f) match{
@@ -326,12 +318,12 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
           }
           Function(pp, paramsp, retty, ren(envpp,e1))
         }
-        case Call(e1, args) => ???/*{
+        case Call(e1, args) => {
          val renamedArgs = args.foldRight(Nil: List[(Expr)]) {
            case (d, acc) => ren(env, d) :: acc
          }
          Call(ren(env, e1), renamedArgs)
-       }*/
+       }
         case Obj(fields) => Obj(fields.mapValues(value => ren(env,value)))
         case GetField(e1, f) =>
           e1 match {
