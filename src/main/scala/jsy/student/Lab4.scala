@@ -319,11 +319,11 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
           Function(pp, paramsp, retty, ren(envpp,e1))
         }
         case Call(e1, args) => {
-         val renamedArgs = args.foldRight(Nil: List[(Expr)]) {
-           case (d, acc) => ren(env, d) :: acc
-         }
-         Call(ren(env, e1), renamedArgs)
-       }
+          val renamedArgs = args.foldRight(Nil: List[(Expr)]) {
+            case (d, acc) => ren(env, d) :: acc
+          }
+          Call(ren(env, e1), renamedArgs)
+        }
         case Obj(fields) => Obj(fields.mapValues(value => ren(env,value)))
         case GetField(e1, f) =>
           e1 match {
@@ -383,12 +383,12 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
           case Function(p, params, _, e1) => {
             val pazip = params zip args
             //((pname, Mtyp(mode, type)),arg)
-            val reducable = pazip.foldRight(false){
+            /*val reducable = pazip.foldRight(false){
               (p, acc) => p match {
                 case ((pname, pmode), ar) => acc || isRedex(pmode.m, ar)
               }
-            }
-            if (!reducable) {
+            }*/
+            if (pazip.forall(f => !isRedex(f._1._2.m, f._2))) {
               val e1p = pazip.foldRight(e1) {
                 case(((pname,_), ar), end) => substitute(end,ar,pname)
               }
@@ -405,16 +405,16 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
                 p => p match{
                   case ((pname, pmode), ar) =>
                     if(isRedex(pmode.m,ar)) Some(((pname, pmode),step(ar)))
-                  else None
+                    else None
                 }
               }
               val unzipped = pazipp.unzip
-              step(Call(v1, unzipped._2))
+              Call(v1, unzipped._2)
             }
           }
           case _ => throw StuckError(e)
         }
-        //Do Decl and Search Decl
+      //Do Decl and Search Decl
       case Decl(mode, y, e1, e2) =>
         //Do Decl
         if(!isRedex(mode, e1)) substitute(e2,e1,y)
@@ -477,5 +477,3 @@ object Lab4 extends jsy.util.JsyApplication with Lab4Like {
   //this.debug = true // uncomment this if you want to print debugging information
   this.keepGoing = true // comment this out if you want to stop at first exception when processing a file
 }
-
-
